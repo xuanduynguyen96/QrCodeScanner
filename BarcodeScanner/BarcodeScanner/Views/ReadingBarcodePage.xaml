@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BarcodeScanner.Views.ReadingBarcodePage"
+             xmlns:vm="clr-namespace:BarcodeScanner.ViewModels"
+             xmlns:xct="http://xamarin.com/schemas/2020/toolkit"
+             xmlns:conveter="clr-namespace:BarcodeScanner.Converters"
+             xmlns:zxing="clr-namespace:ZXing.Net.Mobile.Forms;assembly=ZXing.Net.Mobile.Forms"
+             xmlns:zxingcommon="clr-namespace:ZXing.Common;assembly=zxing.portable"
+             xmlns:customrender="clr-namespace:BarcodeScanner.CustomRenderer"
+             Title="{Binding Title}">
+
+    <ContentPage.BindingContext>
+        <vm:ReadingBarcodeViewModel />
+    </ContentPage.BindingContext>
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conveter:DisableContentConverter x:Key="disableContentConverter" />
+            <conveter:InverseBoolConverter x:Key="inverseBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="70"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <StackLayout Orientation="Vertical" Margin="10"
+                     VerticalOptions="Center" HorizontalOptions="Fill">
+                <zxing:ZXingBarcodeImageView BarcodeValue="{Binding Barcode.Text}"
+                                             IsVisible="{Binding Barcode.hasGotten}"
+                                             BarcodeFormat="QR_CODE"
+                                             WidthRequest="250" HeightRequest="250">
+                    <zxing:ZXingBarcodeImageView.BarcodeOptions>
+                        <zxingcommon:EncodingOptions Height="250" Width="250" />
+                    </zxing:ZXingBarcodeImageView.BarcodeOptions>
+                </zxing:ZXingBarcodeImageView>
+                <Image Source="no_data.png" WidthRequest="250" HeightRequest="250"
+                       IsVisible="{Binding Barcode.hasGotten, Converter={StaticResource inverseBoolConverter}}" />
+                
+                <Frame BackgroundColor="Transparent" 
+                       BorderColor="DarkGray" CornerRadius="50" 
+                       HorizontalOptions="FillAndExpand"
+                       Padding="0">
+                    <customrender:CustomEntry x:Name="barcodeText"
+                                              Placeholder="Gotten barcode"
+                                              Text="{Binding Barcode.Text, Mode=OneWay}"
+                                              HorizontalOptions="FillAndExpand"
+                                              Margin="10,0"
+                                              HorizontalTextAlignment="Center"
+                                              IsReadOnly="True" />
+                </Frame>
+                
+                <StackLayout Orientation="Horizontal"
+                         HorizontalOptions="Center">
+                    <ImageButton Source="copy.png" Margin="10,0"
+                                 Command="{Binding CopyToClipBoardCommand}"
+                                 CommandParameter="{Binding Source={x:Reference barcodeText}, Path=Text}"
+                                 IsEnabled="{Binding Barcode.hasGotten}"
+                                 Opacity="{Binding Barcode.hasGotten, Converter={StaticResource disableContentConverter}}"
+                                 WidthRequest="32" HeightRequest="32" BackgroundColor="Transparent"
+                                 VerticalOptions="Center"
+                                 xct:TouchEffect.NativeAnimation="True" />
+                    <ImageButton Source="search_browser.png" Margin="10,0"
+                                 Command="{Binding GotoCommand}"
+                                 CommandParameter="{Binding Source={x:Reference barcodeText}, Path=Text}"
+                                 IsEnabled="{Binding Barcode.IsHyperLink}"
+                                 Opacity="{Binding Barcode.IsHyperLink, Converter={StaticResource disableContentConverter}}"
+                                 WidthRequest="40" HeightRequest="40" BackgroundColor="Transparent"
+                                 VerticalOptions="Center"
+                                 xct:TouchEffect.NativeAnimation="True" />
+                </StackLayout>
+            </StackLayout>
+        </Grid>
+
+        <Grid Grid.Row="1" VerticalOptions="End" Margin="5">
+            <ImageButton Source="scan_qrcode.png" BackgroundColor="Transparent"
+                         VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand"
+                         WidthRequest="64" HeightRequest="64"
+                         Command="{Binding StartReadingBarcodeCommand}"
+                         xct:TouchEffect.NativeAnimation="True" />
+        </Grid>
+    </Grid>
+
+</ContentPage>
